@@ -9,23 +9,24 @@ def gini_impurity(feature,target):
     combinations = []
     for i in range(1,len(df.feature.unique().tolist())):
         for combination in itertools.combinations(df.feature.unique().tolist(),i):
-            combinations.append([combination,df.feature.unique().tolist().remove(combination)])
+            print(combination)
+            combinations.append([list(combination),[x for x in df.feature.unique().tolist() if x not in combination]])
     gini_impurities = {}
     for combination in combinations:
         right = combination[0]
         left = combination[1]
-        left_total = table.loc[:,left.index.tolist()].sum().sum()
-        right_total = table.loc[:,right.index.tolist()].sum().sum()
-        left_class_frequencies = table.loc[:,left.index.tolist()].sum()
-        right_class_frequencies = table.loc[:,right.index.tolist()].sum()
+        left_total = table.loc[:, left].sum().sum()
+        right_total = table.loc[:, right].sum().sum()
+        left_class_frequencies = table.loc[:, left].sum()
+        right_class_frequencies = table.loc[:, right].sum()
         left_impurity = 1 - ((left_class_frequencies/left_total)**2).sum()
         right_impurity = 1 - ((right_class_frequencies/right_total)**2).sum()
         total_impurity = left_impurity*(left_total/(right_total+left_total)) + right_impurity*(right_total/
                                                                                                (right_total+left_total))
-        gini_impurities[combination] = total_impurity
-    least_impurity_key = min(gini_impurities)
+        gini_impurities[(tuple(left),tuple(right))] = total_impurity
+    least_impurity_key = min(gini_impurities, key=gini_impurities.get)
     print(gini_impurities[least_impurity_key] , least_impurity_key )
-    return gini_impurities[least_impurity_key] , least_impurity_key
+    return gini_impurities[least_impurity_key] , [list(least_impurity_key[0]),list(least_impurity_key[1])]
 
 class Node:
 
@@ -132,7 +133,7 @@ target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes
 X = pd.DataFrame(data)
 y = pd.Series(target, name="Play")
 
-tree = Tree(max_depth=100)
+tree = Tree(max_depth=10)
 tree.fit(X, y)
 
 # Call calculate_best_label for all leaves after fitting
