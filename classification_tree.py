@@ -1,19 +1,19 @@
 import numpy as np
 import pandas as pd
+import itertools
 
 def gini_impurity(feature,target):
     df = pd.DataFrame({'feature':feature,'target':target})
     df.sort_values(by='feature',inplace = True)
     table = pd.crosstab(df['target'],df['feature'])
-    probability_vectors = table/table.sum()
-    calculate_probability_class = probability_vectors.idxmax()
-    probability = ([table.loc[x, y] for x, y in zip(calculate_probability_class.tolist(),
-                                                    calculate_probability_class.index.tolist())]/table.sum())
-    probability.sort_values(inplace = True)
+    combinations = []
+    for i in range(1,len(df.feature.unique().tolist())):
+        for combination in itertools.combinations(df.feature.unique().tolist(),i):
+            combinations.append([combination,df.feature.unique().tolist().remove(combination)])
     gini_impurities = {}
-    for i in range(len(probability)-1):
-        right = probability.iloc[i+1:]
-        left = probability.iloc[:i+1]
+    for combination in combinations:
+        right = combination[0]
+        left = combination[1]
         left_total = table.loc[:,left.index.tolist()].sum().sum()
         right_total = table.loc[:,right.index.tolist()].sum().sum()
         left_class_frequencies = table.loc[:,left.index.tolist()].sum()
