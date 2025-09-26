@@ -22,12 +22,10 @@ def gini_impurity(feature,target):
         right_impurity = 1 - ((right_class_frequencies/right_total)**2).sum()
         total_impurity = left_impurity*(left_total/(right_total+left_total)) + right_impurity*(right_total/
                                                                                                (right_total+left_total))
-        gini_impurities[i+1] = total_impurity
+        gini_impurities[combination] = total_impurity
     least_impurity_key = min(gini_impurities)
-    split = [probability.iloc[least_impurity_key+1:].index.tolist(),
-             probability.iloc[:least_impurity_key+1].index.tolist()]
-    print(gini_impurities[least_impurity_key] , split)
-    return gini_impurities[least_impurity_key] , split
+    print(gini_impurities[least_impurity_key] , least_impurity_key )
+    return gini_impurities[least_impurity_key] , least_impurity_key
 
 class Node:
 
