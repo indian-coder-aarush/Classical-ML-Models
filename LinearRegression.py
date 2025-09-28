@@ -18,12 +18,12 @@ class LinearRegression:
                 self.coeff -= lr*coeff_grad
                 self.intercept -= lr*intercept_grad
         elif method == "LeastSquares":
-            X_with_ones = np.zeros_like((X.shape[0],X.shape[1]+1))
+            X_with_ones = np.zeros((X.shape[0],X.shape[1]+1))
             X_with_ones[:,1:] = X
             X_with_ones[:,0] = np.ones(X.shape[0])
             solution = np.linalg.inv(X_with_ones.T@X_with_ones)@X_with_ones.T@y
             self.intercept = solution[0]
-            self.coeff = solution[1]
+            self.coeff = solution[1:]
 
     def predict(self, X):
         return np.dot(X, self.coeff) + self.intercept
