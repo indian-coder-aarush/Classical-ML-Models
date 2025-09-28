@@ -31,30 +31,31 @@ class LinearRegression:
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ----- Generate noisy data (same as before) -----
-np.random.seed(42)
-n_samples = 50
-experience = np.random.randint(1, 11, size=n_samples)
-education = np.random.choice([0,1,2], size=n_samples)
-noise = np.random.normal(0, 5000, size=n_samples)
+if __name__ == "__main__":
+    # ----- Generate noisy data (same as before) -----
+    np.random.seed(42)
+    n_samples = 50
+    experience = np.random.randint(1, 11, size=n_samples)
+    education = np.random.choice([0,1,2], size=n_samples)
+    noise = np.random.normal(0, 5000, size=n_samples)
 
-y = 5000*experience + 10000*education + noise
-X = np.column_stack([experience, education])
+    y = 5000*experience + 10000*education + noise
+    X = np.column_stack([experience, education])
 
-# ----- Train your model -----
-model = LinearRegression()
-model.fit(X, y, method="LeastSquares")
+    # ----- Train your model -----
+    model = LinearRegression()
+    model.fit(X, y, method="LeastSquares")
 
-# Predictions
-y_pred = model.predict(X)
+    # Predictions
+    y_pred = model.predict(X)
 
-# ----- Plot y_true vs y_pred -----
-plt.figure(figsize=(7,7))
-plt.scatter(y, y_pred, color="blue", alpha=0.7, label="Predictions")
-plt.plot([y.min(), y.max()], [y.min(), y.max()], "r--", lw=2, label="y = y_pred")
-plt.xlabel("True Salary")
-plt.ylabel("Predicted Salary")
-plt.title("True vs Predicted Salaries")
-plt.legend()
-plt.grid(True)
-plt.show()
+    # ----- Plot y_true vs y_pred -----
+    plt.figure(figsize=(7,7))
+    plt.scatter(y, y_pred, color="blue", alpha=0.7, label="Predictions")
+    plt.plot([y.min(), y.max()], [y.min(), y.max()], "r--", lw=2, label="y = y_pred")
+    plt.xlabel("True Salary")
+    plt.ylabel("Predicted Salary")
+    plt.title("True vs Predicted Salaries")
+    plt.legend()
+    plt.grid(True)
+    plt.show()

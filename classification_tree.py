@@ -118,32 +118,33 @@ class Tree:
         result = self.node.forward(features)
         return result
 
-data = {
-    0: ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny", "Overcast", "Overcast", "Rain"],
-    1: ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
-    2: ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High", "Normal", "High"],
-    3: ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Strong"]
-}
+if __name__ == '__main__':
+    data = {
+        0: ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny", "Overcast", "Overcast", "Rain"],
+        1: ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
+        2: ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High", "Normal", "High"],
+        3: ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Strong"]
+    }
 
-# Target
-target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
+    # Target
+    target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
 
-# Convert to DataFrame
-X = pd.DataFrame(data)
-y = pd.Series(target, name="Play")
+    # Convert to DataFrame
+    X = pd.DataFrame(data)
+    y = pd.Series(target, name="Play")
 
-tree = Tree(max_depth=10)
-tree.fit(X, y)
+    tree = Tree(max_depth=10)
+    tree.fit(X, y)
 
-# Call calculate_best_label for all leaves after fitting
-def set_labels(node):
-    if isinstance(node, LeafNode):
-        node.calculate_best_label()
-    else:
-        set_labels(node.left_child)
-        set_labels(node.right_child)
+    # Call calculate_best_label for all leaves after fitting
+    def set_labels(node):
+        if isinstance(node, LeafNode):
+            node.calculate_best_label()
+        else:
+            set_labels(node.left_child)
+            set_labels(node.right_child)
 
-set_labels(tree.node)
+    set_labels(tree.node)
 
-for i in range(14):
-    print(tree.predict(X.loc[i]))
+    for i in range(14):
+        print(tree.predict(X.loc[i]))

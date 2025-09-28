@@ -34,13 +34,14 @@ data = {
         "Strong"]
 }
 
-# Target
-target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
+if __name__ == '__main__':
+    # Target
+    target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
 
-# Convert to DataFrame
-X = pd.DataFrame(data)
-y = pd.Series(target, name="Play")
+    # Convert to DataFrame
+    X = pd.DataFrame(data)
+    y = pd.Series(target, name="Play")
 
-tree = RandomForestClassifier(n_estimators = 100,max_depth=10)
-tree.fit(X, y)
-print(tree.predict(X))
+    tree = RandomForestClassifier(n_estimators = 100,max_depth=10)
+    tree.fit(X, y)
+    print(tree.predict(X))
