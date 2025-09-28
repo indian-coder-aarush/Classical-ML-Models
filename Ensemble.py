@@ -1,3 +1,4 @@
+import pandas as pd
 from classification_tree import Tree
 
 class RandomForestClassifier:
@@ -8,10 +9,18 @@ class RandomForestClassifier:
         self.max_depth = max_depth
 
     def fit(self,X,y):
+        self.models = []
         for i in range(self.n_estimators):
             self.models.append(Tree(max_depth=self.max_depth))
             data = X
             data['target'] = y
             data_length = len(data.index)
             data_sampled = data.sample(int(data_length*0.667))
+            self.models[i].fit(data_sampled.drop('target',axis=1), data_sampled['target'])
+
+    def predict(self,X):
+        predictions = []
+        for i in self.models:
+            predictions.append(i.predict(X))
+        return pd.Series(predictions).mode()
 
