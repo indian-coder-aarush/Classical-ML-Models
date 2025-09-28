@@ -24,3 +24,23 @@ class RandomForestClassifier:
             predictions.append(i.predict(X))
         return pd.Series(predictions).mode()
 
+data = {
+    0: ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny", "Overcast",
+        "Overcast", "Rain"],
+    1: ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
+    2: ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High",
+        "Normal", "High"],
+    3: ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak",
+        "Strong"]
+}
+
+# Target
+target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
+
+# Convert to DataFrame
+X = pd.DataFrame(data)
+y = pd.Series(target, name="Play")
+
+tree = RandomForestClassifier(n_estimators = 100,max_depth=10)
+tree.fit(X, y)
+print(tree.predict(X))
