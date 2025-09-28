@@ -2,17 +2,18 @@ import numpy as np
 
 class LinearRegression:
 
-    def __init__(self,size):
-        self.coeff = np.zeros(size)
+    def __init__(self):
+        self.coeff = None
         self.intercept = np.array(0,dtype=float)
 
-    def fit(self, X, y):
+    def fit(self, X, y, lr = 0.1):
+        self.intercept = np.zeros(X.shape[1])
         for i in range(10000):
             y_pred = X@self.coeff + self.intercept
             coeff_grad = X.T@(2*(y_pred - y))/len(X)
             intercept_grad = 2*(y_pred - y).sum()/len(X)
-            self.coeff -= 0.01*coeff_grad
-            self.intercept -= 0.01*intercept_grad
+            self.coeff -= lr*coeff_grad
+            self.intercept -= lr*intercept_grad
 
     def predict(self, X):
         return np.dot(X, self.coeff) + self.intercept
