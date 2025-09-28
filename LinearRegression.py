@@ -8,6 +8,8 @@ class LinearRegression:
 
     def fit(self, X, y, lr = 0.1):
         self.intercept = np.zeros(X.shape[1])
+        if X.shape[0] != y.shape[1]:
+            raise ValueError("X and y must have same number of data points")
         for i in range(10000):
             y_pred = X@self.coeff + self.intercept
             coeff_grad = X.T@(2*(y_pred - y))/len(X)
