@@ -6,16 +6,17 @@ class LinearRegression:
         self.coeff = None
         self.intercept = np.array(0,dtype=float)
 
-    def fit(self, X, y, lr = 0.1):
+    def fit(self, X, y, lr = 0.1, method = "GradientDescent"):
         self.intercept = np.zeros(X.shape[1])
         if X.shape[0] != y.shape[1]:
             raise ValueError("X and y must have same number of data points")
-        for i in range(10000):
-            y_pred = X@self.coeff + self.intercept
-            coeff_grad = X.T@(2*(y_pred - y))/len(X)
-            intercept_grad = 2*(y_pred - y).sum()/len(X)
-            self.coeff -= lr*coeff_grad
-            self.intercept -= lr*intercept_grad
+        if method == "GradientDescent":
+            for i in range(10000):
+                y_pred = X@self.coeff + self.intercept
+                coeff_grad = X.T@(2*(y_pred - y))/len(X)
+                intercept_grad = 2*(y_pred - y).sum()/len(X)
+                self.coeff -= lr*coeff_grad
+                self.intercept -= lr*intercept_grad
 
     def predict(self, X):
         return np.dot(X, self.coeff) + self.intercept
