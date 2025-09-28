@@ -25,7 +25,6 @@ def gini_impurity(feature,target):
                                                                                                (right_total+left_total))
         gini_impurities[(tuple(left),tuple(right))] = total_impurity
     least_impurity_key = min(gini_impurities, key=gini_impurities.get)
-    print(gini_impurities[least_impurity_key] , least_impurity_key )
     return gini_impurities[least_impurity_key] , [list(least_impurity_key[0]),list(least_impurity_key[1])]
 
 class Node:
