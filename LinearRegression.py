@@ -7,7 +7,7 @@ class LinearRegression:
         self.intercept = np.array(0,dtype=float)
 
     def fit(self, X, y, lr = 0.1, method = "GradientDescent"):
-        self.intercept = np.zeros(X.shape[1])
+        self.coeff = np.zeros(X.shape[1])
         if X.shape[0] != len(y):
             raise ValueError("X and y must have same number of data points")
         if method == "GradientDescent":
