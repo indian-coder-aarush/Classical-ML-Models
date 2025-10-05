@@ -62,6 +62,8 @@ class Node:
                 return
             self.left_child = LeafNode(target[mask_left])
             self.right_child = LeafNode(target[mask_right])
+            self.left_child.calculate_best_label()
+            self.right_child.calculate_best_label()
             return
         if self.left_child is None and self.right_child is None and self.depth < self.max_depth:
             mask_left = feature[split_index].isin(split[0])
@@ -135,16 +137,6 @@ if __name__ == '__main__':
 
     tree = Tree(max_depth=10)
     tree.fit(X, y)
-
-    # Call calculate_best_label for all leaves after fitting
-    def set_labels(node):
-        if isinstance(node, LeafNode):
-            node.calculate_best_label()
-        else:
-            set_labels(node.left_child)
-            set_labels(node.right_child)
-
-    set_labels(tree.node)
 
     for i in range(14):
         print(tree.predict(X.loc[i]))
