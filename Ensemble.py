@@ -12,7 +12,7 @@ class RandomForestClassifier:
         self.models = []
         for i in range(self.n_estimators):
             self.models.append(Tree(max_depth=self.max_depth))
-            data = X
+            data = X.copy()
             data['target'] = y
             data_length = len(data.index)
             data_sampled = data.sample(int(data_length*0.667))
@@ -44,4 +44,5 @@ if __name__ == '__main__':
 
     tree = RandomForestClassifier(n_estimators = 100,max_depth=10)
     tree.fit(X, y)
-    print(tree.predict(X))
+    for i in range(14):
+        print(tree.predict(X.loc[i]))
