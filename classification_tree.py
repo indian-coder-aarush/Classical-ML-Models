@@ -6,10 +6,11 @@ def gini_impurity(feature,target):
     df = pd.DataFrame({'feature':feature,'target':target})
     df.sort_values(by='feature',inplace = True)
     table = pd.crosstab(df['target'],df['feature'])
+    if len(df['feature'].unique()) == 1:
+        return 0, [list(df['feature'].unique()), []]
     combinations = []
     for i in range(1,len(df.feature.unique().tolist())):
         for combination in itertools.combinations(df.feature.unique().tolist(),i):
-            print(combination)
             combinations.append([list(combination),[x for x in df.feature.unique().tolist() if x not in combination]])
     gini_impurities = {}
     for combination in combinations:
@@ -17,14 +18,15 @@ def gini_impurity(feature,target):
         left = combination[1]
         left_total = table.loc[:, left].sum().sum()
         right_total = table.loc[:, right].sum().sum()
-        left_class_frequencies = table.loc[:, left].sum()
-        right_class_frequencies = table.loc[:, right].sum()
-        left_impurity = 1 - ((left_class_frequencies/left_total)**2).sum()
-        right_impurity = 1 - ((right_class_frequencies/right_total)**2).sum()
+        left_class_frequencies = table.loc[:, left]
+        right_class_frequencies = table.loc[:, right]
+        left_impurity = 1 - ((left_class_frequencies/left_total)**2).sum().sum()
+        right_impurity = 1 - ((right_class_frequencies/right_total)**2).sum().sum()
         total_impurity = left_impurity*(left_total/(right_total+left_total)) + right_impurity*(right_total/
                                                                                                (right_total+left_total))
         gini_impurities[(tuple(left),tuple(right))] = total_impurity
     least_impurity_key = min(gini_impurities, key=gini_impurities.get)
+    print(gini_impurities[least_impurity_key] , [list(least_impurity_key[0]),list(least_impurity_key[1])])
     return gini_impurities[least_impurity_key] , [list(least_impurity_key[0]),list(least_impurity_key[1])]
 
 class Node:
@@ -41,43 +43,42 @@ class Node:
 
     def make_children(self):
         feature = pd.DataFrame(self.feature)
-        target = pd.DataFrame(self.target)
+        target = pd.DataFrame(self.target.squeeze())
+        max_depth = self.max_depth
+        depth = self.depth
         gini_impurities = []
         splits = []
         for i in range(self.feature.shape[1]):
-            take_input_tuple = gini_impurity(self.feature[i], self.target)
+            take_input_tuple = gini_impurity(feature.iloc[:, i].squeeze(), self.target.squeeze())
             gini_impurities.append(take_input_tuple[0])
             splits.append(take_input_tuple[1])
         split_index = gini_impurities.index(min(gini_impurities))
         split = splits[split_index]
         self.split = split
         self.split_feature_index = split_index
+        mask_left = feature[split_index].isin(split[0])
+        mask_right = feature[split_index].isin(split[1])
+        if mask_left.sum() == 0 or mask_right.sum() == 0:
+            self.left_child = LeafNode(self.target)
+            self.right_child = LeafNode(self.target)
+            self.left_child.calculate_best_label()
+            self.right_child.calculate_best_label()
+            return
         if self.left_child is None and self.right_child is None and (self.depth == self.max_depth-1 or
                                                                      min(gini_impurities)==0):
-            mask_left = feature[split_index].isin(split[0])
-            mask_right = feature[split_index].isin(split[1])
-            if mask_left.sum() == 0 or mask_right.sum() == 0:
-                self.left_child = LeafNode(self.target)
-                self.right_child = LeafNode(self.target)
-                return
             self.left_child = LeafNode(target[mask_left])
             self.right_child = LeafNode(target[mask_right])
             self.left_child.calculate_best_label()
             self.right_child.calculate_best_label()
             return
         if self.left_child is None and self.right_child is None and self.depth < self.max_depth:
-            mask_left = feature[split_index].isin(split[0])
-            mask_right = feature[split_index].isin(split[1])
-            if mask_left.sum() == 0 or mask_right.sum() == 0:
-                self.left_child = LeafNode(self.target)
-                self.right_child = LeafNode(self.target)
-                return
             self.left_child = Node(feature[mask_left], target[mask_left],
                                    self.max_depth, self.depth + 1)
             self.right_child = Node(feature[mask_right], target[mask_right],
                                     self.max_depth, self.depth + 1)
             self.left_child.make_children()
             self.right_child.make_children()
+
 
     def forward(self,features):
         if self.left_child is None or self.right_child is None:
@@ -130,13 +131,10 @@ if __name__ == '__main__':
 
     # Target
     target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
-
     # Convert to DataFrame
     X = pd.DataFrame(data)
     y = pd.Series(target, name="Play")
-
     tree = Tree(max_depth=10)
     tree.fit(X, y)
-
     for i in range(14):
         print(tree.predict(X.loc[i]))
