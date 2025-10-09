@@ -26,7 +26,6 @@ def gini_impurity(feature,target):
                                                                                                (right_total+left_total))
         gini_impurities[(tuple(left),tuple(right))] = total_impurity
     least_impurity_key = min(gini_impurities, key=gini_impurities.get)
-    print(gini_impurities[least_impurity_key] , [list(least_impurity_key[0]),list(least_impurity_key[1])])
     return gini_impurities[least_impurity_key] , [list(least_impurity_key[0]),list(least_impurity_key[1])]
 
 class Node:
@@ -42,12 +41,11 @@ class Node:
         self.split_feature_index = None
 
     def make_children(self):
-        feature = pd.DataFrame(self.feature)
-        target = pd.DataFrame(self.target.squeeze())
-        max_depth = self.max_depth
-        depth = self.depth
+        feature = pd.DataFrame(self.feature).reset_index(drop = True)
+        target = pd.DataFrame(self.target.squeeze()).reset_index(drop = True)
         gini_impurities = []
         splits = []
+        self.feature = self.feature[[col for col in feature.columns if feature[col].nunique() > 1]]
         for i in range(self.feature.shape[1]):
             take_input_tuple = gini_impurity(feature.iloc[:, i].squeeze(), self.target.squeeze())
             gini_impurities.append(take_input_tuple[0])
@@ -59,22 +57,23 @@ class Node:
         mask_left = feature[split_index].isin(split[0])
         mask_right = feature[split_index].isin(split[1])
         if mask_left.sum() == 0 or mask_right.sum() == 0:
-            self.left_child = LeafNode(self.target)
-            self.right_child = LeafNode(self.target)
+            self.left_child = LeafNode(self.target.squeeze())
+            self.right_child = LeafNode(self.target.squeeze())
             self.left_child.calculate_best_label()
             self.right_child.calculate_best_label()
             return
-        if self.left_child is None and self.right_child is None and (self.depth == self.max_depth-1 or
-                                                                     min(gini_impurities)==0):
-            self.left_child = LeafNode(target[mask_left])
-            self.right_child = LeafNode(target[mask_right])
+        if self.depth == self.max_depth-1 or min(gini_impurities)==0:
+            self.left_child = LeafNode(target[mask_left].squeeze())
+            self.right_child = LeafNode(target[mask_right].squeeze())
             self.left_child.calculate_best_label()
             self.right_child.calculate_best_label()
             return
-        if self.left_child is None and self.right_child is None and self.depth < self.max_depth:
-            self.left_child = Node(feature[mask_left], target[mask_left],
+        else:
+            self.left_child = Node(feature[mask_left].reset_index(drop = True),
+                                   target[mask_left].reset_index(drop = True),
                                    self.max_depth, self.depth + 1)
-            self.right_child = Node(feature[mask_right], target[mask_right],
+            self.right_child = Node(feature[mask_right].reset_index(drop = True),
+                                    target[mask_right].reset_index(drop = True),
                                     self.max_depth, self.depth + 1)
             self.left_child.make_children()
             self.right_child.make_children()
