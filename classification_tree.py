@@ -83,9 +83,12 @@ class Node:
         if self.left_child is None or self.right_child is None:
             raise RuntimeError('You must call make_children first')
         if features[self.split_feature_index] in self.split[0]:
+            print(self.left_child)
             return self.left_child.forward(features)
-        if features[self.split_feature_index] in self.split[1]:
+        elif features[self.split_feature_index] in self.split[1]:
+            print(self.right_child)
             return self.right_child.forward(features)
+        return self.right_child.forward(features)
 
 class LeafNode:
 
