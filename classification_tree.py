@@ -47,7 +47,7 @@ class Node:
         splits = []
         self.feature = self.feature[[col for col in feature.columns if feature[col].nunique() > 1]]
         for i in range(self.feature.shape[1]):
-            take_input_tuple = gini_impurity(feature.iloc[:, i].squeeze(), self.target.squeeze())
+            take_input_tuple = gini_impurity(self.feature.iloc[:, i].squeeze(), self.target.squeeze())
             gini_impurities.append(take_input_tuple[0])
             splits.append(take_input_tuple[1])
         split_index = gini_impurities.index(min(gini_impurities))
