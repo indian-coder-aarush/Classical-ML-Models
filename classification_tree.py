@@ -42,7 +42,7 @@ class Node:
 
     def make_children(self):
         feature = pd.DataFrame(self.feature).reset_index(drop = True)
-        target = pd.DataFrame(self.target.squeeze()).reset_index(drop = True)
+        target = pd.DataFrame(self.target).reset_index(drop = True)
         gini_impurities = []
         splits = []
         self.feature = self.feature[[col for col in feature.columns if feature[col].nunique() > 1]]
@@ -50,7 +50,12 @@ class Node:
             take_input_tuple = gini_impurity(self.feature.iloc[:, i].squeeze(), self.target.squeeze())
             gini_impurities.append(take_input_tuple[0])
             splits.append(take_input_tuple[1])
-        split_index = gini_impurities.index(min(gini_impurities))
+        if len(gini_impurities) == 1:
+            split_index = 0
+        else:
+            print(gini_impurities)
+            split_index = gini_impurities.index(min(gini_impurities))
+
         split = splits[split_index]
         self.split = split
         self.split_feature_index = split_index
@@ -83,10 +88,8 @@ class Node:
         if self.left_child is None or self.right_child is None:
             raise RuntimeError('You must call make_children first')
         if features[self.split_feature_index] in self.split[0]:
-            print(self.left_child)
             return self.left_child.forward(features)
         elif features[self.split_feature_index] in self.split[1]:
-            print(self.right_child)
             return self.right_child.forward(features)
         return self.right_child.forward(features)
 
@@ -138,5 +141,11 @@ if __name__ == '__main__':
     y = pd.Series(target, name="Play")
     tree = Tree(max_depth=10)
     tree.fit(X, y)
+    pred = []
+    correct = 0
     for i in range(14):
-        print(tree.predict(X.loc[i]))
+        pred.append(tree.predict(X.loc[i]))
+        if target[i] == pred[i]:
+            correct += 1
+
+    print(correct*100/14)
