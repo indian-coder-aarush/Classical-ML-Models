@@ -16,6 +16,7 @@ class RandomForestClassifier:
             data['target'] = y
             data_length = len(data.index)
             data_sampled = data.sample(int(data_length*0.667))
+            print(data_sampled)
             self.models[i].fit(data_sampled.drop('target',axis=1), data_sampled['target'])
 
     def predict(self,X):
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     X = pd.DataFrame(data)
     y = pd.Series(target, name="Play")
 
-    tree = RandomForestClassifier(n_estimators = 100,max_depth=10)
+    tree = RandomForestClassifier(n_estimators = 200,max_depth=10)
     tree.fit(X, y)
     for i in range(14):
         print(tree.predict(X.loc[i]))

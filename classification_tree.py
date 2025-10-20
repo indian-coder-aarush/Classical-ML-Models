@@ -50,12 +50,17 @@ class Node:
             take_input_tuple = gini_impurity(self.feature.iloc[:, i].squeeze(), self.target.squeeze())
             gini_impurities.append(take_input_tuple[0])
             splits.append(take_input_tuple[1])
+        if len(gini_impurities) == 0:
+            self.left_child = LeafNode(self.target.squeeze())
+            self.right_child = LeafNode(self.target.squeeze())
+            self.left_child.calculate_best_label()
+            self.right_child.calculate_best_label()
+            return
         if len(gini_impurities) == 1:
             split_index = 0
         else:
             print(gini_impurities)
             split_index = gini_impurities.index(min(gini_impurities))
-
         split = splits[split_index]
         self.split = split
         self.split_feature_index = split_index
@@ -87,7 +92,10 @@ class Node:
     def forward(self,features):
         if self.left_child is None or self.right_child is None:
             raise RuntimeError('You must call make_children first')
-        if features[self.split_feature_index] in self.split[0]:
+        if (self.right_child.__class__.__name__ == "LeafNode" and
+                self.right_child.predicted_label == self.left_child.predicted_label):
+            return self.right_child.predicted_label
+        elif features[self.split_feature_index] in self.split[0]:
             return self.left_child.forward(features)
         elif features[self.split_feature_index] in self.split[1]:
             return self.right_child.forward(features)
@@ -127,24 +135,33 @@ class Tree:
         return result
 
 if __name__ == '__main__':
-    data = {
-        0: ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny", "Overcast", "Overcast", "Rain"],
-        1: ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
-        2: ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High", "Normal", "High"],
-        3: ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Strong"]
-    }
+    data = [
+        ["Sunny", "Mild", "High", "Weak", "No"],
+        ["Rain", "Cool", "Normal", "Strong", "No"],
+        ["Overcast", "Hot", "High", "Weak", "Yes"],
+        ["Overcast", "Mild", "High", "Strong", "Yes"],
+        ["Overcast", "Cool", "Normal", "Strong", "Yes"],
+        ["Sunny", "Hot", "High", "Strong", "No"],
+        ["Rain", "Cool", "Normal", "Weak", "Yes"],
+        ["Rain", "Mild", "Normal", "Weak", "Yes"],
+        ["Sunny", "Mild", "Normal", "Strong", "Yes"]
+    ]
+
+    columns = [0, 1, 2, 3, "target"]
+
+    df = pd.DataFrame(data, columns=columns)
 
     # Target
     target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
     # Convert to DataFrame
-    X = pd.DataFrame(data)
-    y = pd.Series(target, name="Play")
+    X = df.drop(columns=['target'])
+    y = df['target']
     tree = Tree(max_depth=10)
     tree.fit(X, y)
     pred = []
     correct = 0
-    for i in range(14):
-        pred.append(tree.predict(X.loc[i]))
+    for i in range(9):
+        pred.append(tree.predict(X.iloc[i]))
         if target[i] == pred[i]:
             correct += 1
 
