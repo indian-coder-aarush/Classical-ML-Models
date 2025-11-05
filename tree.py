@@ -121,7 +121,7 @@ class LeafNode:
         else:
             raise RuntimeError('You must call calculate_best_label first')
 
-class Tree:
+class DecisionTreeClassifier:
 
     def __init__(self,max_depth):
         self.max_depth = max_depth

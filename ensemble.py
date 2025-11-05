@@ -1,5 +1,5 @@
 import pandas as pd
-from classification_tree import Tree
+from tree import DecisionTreeClassifier
 
 class RandomForestClassifier:
 
@@ -11,7 +11,7 @@ class RandomForestClassifier:
     def fit(self,X,y):
         self.models = []
         for i in range(self.n_estimators):
-            self.models.append(Tree(max_depth=self.max_depth))
+            self.models.append(DecisionTreeClassifier(max_depth=self.max_depth))
             data = X.copy()
             data['target'] = y
             data_length = len(data.index)
