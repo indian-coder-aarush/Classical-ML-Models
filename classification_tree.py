@@ -41,13 +41,13 @@ class Node:
         self.split_feature_index = None
 
     def make_children(self):
-        feature = pd.DataFrame(self.feature).reset_index(drop = True)
-        target = pd.DataFrame(self.target).reset_index(drop = True)
+        feature = pd.DataFrame(self.feature)
+        target = pd.DataFrame(self.target)
         gini_impurities = []
         splits = []
-        self.feature = self.feature[[col for col in feature.columns if feature[col].nunique() > 1]]
-        for i in range(self.feature.shape[1]):
-            take_input_tuple = gini_impurity(self.feature.iloc[:, i].squeeze(), self.target.squeeze())
+        valid_cols = [col for col in feature.columns if feature[col].nunique() > 1]
+        for col in valid_cols:
+            take_input_tuple = gini_impurity(feature[col].squeeze(), target.squeeze())
             gini_impurities.append(take_input_tuple[0])
             splits.append(take_input_tuple[1])
         if len(gini_impurities) == 0:
@@ -63,9 +63,9 @@ class Node:
             split_index = gini_impurities.index(min(gini_impurities))
         split = splits[split_index]
         self.split = split
-        self.split_feature_index = split_index
-        mask_left = feature[split_index].isin(split[0])
-        mask_right = feature[split_index].isin(split[1])
+        self.split_feature_index = valid_cols[split_index]
+        mask_left = feature[self.split_feature_index].isin(split[0])
+        mask_right = feature[self.split_feature_index].isin(split[1])
         if mask_left.sum() == 0 or mask_right.sum() == 0:
             self.left_child = LeafNode(self.target.squeeze())
             self.right_child = LeafNode(self.target.squeeze())
@@ -79,11 +79,11 @@ class Node:
             self.right_child.calculate_best_label()
             return
         else:
-            self.left_child = Node(feature[mask_left].reset_index(drop = True),
-                                   target[mask_left].reset_index(drop = True),
+            self.left_child = Node(feature[mask_left],
+                                   target[mask_left],
                                    self.max_depth, self.depth + 1)
-            self.right_child = Node(feature[mask_right].reset_index(drop = True),
-                                    target[mask_right].reset_index(drop = True),
+            self.right_child = Node(feature[mask_right],
+                                    target[mask_right],
                                     self.max_depth, self.depth + 1)
             self.left_child.make_children()
             self.right_child.make_children()
@@ -95,11 +95,15 @@ class Node:
         if (self.right_child.__class__.__name__ == "LeafNode" and
                 self.right_child.predicted_label == self.left_child.predicted_label):
             return self.right_child.predicted_label
-        elif features[self.split_feature_index] in self.split[0]:
+        value = features[self.split_feature_index]
+        if value in self.split[0]:
             return self.left_child.forward(features)
-        elif features[self.split_feature_index] in self.split[1]:
+        elif value in self.split[1]:
             return self.right_child.forward(features)
-        return self.right_child.forward(features)
+        if len(self.left_child.target) >= len(self.right_child.target):
+            return self.left_child.forward(features)
+        else:
+            return self.right_child.forward(features)
 
 class LeafNode:
 
@@ -135,32 +139,32 @@ class Tree:
         return result
 
 if __name__ == '__main__':
-    data = [
-        ["Sunny", "Mild", "High", "Weak", "No"],
-        ["Rain", "Cool", "Normal", "Strong", "No"],
-        ["Overcast", "Hot", "High", "Weak", "Yes"],
-        ["Overcast", "Mild", "High", "Strong", "Yes"],
-        ["Overcast", "Cool", "Normal", "Strong", "Yes"],
-        ["Sunny", "Hot", "High", "Strong", "No"],
-        ["Rain", "Cool", "Normal", "Weak", "Yes"],
-        ["Rain", "Mild", "Normal", "Weak", "Yes"],
-        ["Sunny", "Mild", "Normal", "Strong", "Yes"]
-    ]
+    data = {
+        0: ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny",
+            "Overcast",
+            "Overcast", "Rain"],
+        1: ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
+        2: ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High",
+            "Normal", "High"],
+        3: ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong",
+            "Weak",
+            "Strong"]
+    }
 
-    columns = [0, 1, 2, 3, "target"]
+    columns = [0, 1, 2, 3]
 
     df = pd.DataFrame(data, columns=columns)
 
     # Target
     target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
     # Convert to DataFrame
-    X = df.drop(columns=['target'])
-    y = df['target']
+    X = df
+    y = pd.DataFrame(target,columns = ['target'])
     tree = Tree(max_depth=10)
     tree.fit(X, y)
     pred = []
     correct = 0
-    for i in range(9):
+    for i in range(14):
         pred.append(tree.predict(X.iloc[i]))
         if target[i] == pred[i]:
             correct += 1
