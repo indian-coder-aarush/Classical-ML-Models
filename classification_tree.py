@@ -59,7 +59,6 @@ class Node:
         if len(gini_impurities) == 1:
             split_index = 0
         else:
-            print(gini_impurities)
             split_index = gini_impurities.index(min(gini_impurities))
         split = splits[split_index]
         self.split = split
@@ -137,36 +136,3 @@ class Tree:
             raise RuntimeError('You must call fit first')
         result = self.node.forward(features)
         return result
-
-if __name__ == '__main__':
-    data = {
-        0: ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny",
-            "Overcast",
-            "Overcast", "Rain"],
-        1: ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
-        2: ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High",
-            "Normal", "High"],
-        3: ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong",
-            "Weak",
-            "Strong"]
-    }
-
-    columns = [0, 1, 2, 3]
-
-    df = pd.DataFrame(data, columns=columns)
-
-    # Target
-    target = ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
-    # Convert to DataFrame
-    X = df
-    y = pd.DataFrame(target,columns = ['target'])
-    tree = Tree(max_depth=10)
-    tree.fit(X, y)
-    pred = []
-    correct = 0
-    for i in range(14):
-        pred.append(tree.predict(X.iloc[i]))
-        if target[i] == pred[i]:
-            correct += 1
-
-    print(correct*100/14)
